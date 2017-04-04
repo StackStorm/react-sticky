@@ -501,7 +501,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Sticky.propTypes = {
 	  useContainerEvents: _react2.default.PropTypes.bool,
 	  isActive: _react2.default.PropTypes.bool,
-	  className: _react2.default.PropTypes.string,
+	  className: _react2.default.PropTypes.any,
 	  style: _react2.default.PropTypes.object,
 	  stickyClassName: _react2.default.PropTypes.string,
 	  stickyStyle: _react2.default.PropTypes.object,
