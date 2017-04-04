@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+const EVENTS = ['resize', 'scroll', 'touchstart', 'touchmove', 'touchend', 'pageshow', 'load'];
+
 export default class Sticky extends React.Component {
 
   static propTypes = {
+    useContainerEvents: React.PropTypes.bool,
     isActive: React.PropTypes.bool,
     className: React.PropTypes.string,
     style: React.PropTypes.object,
@@ -15,6 +18,7 @@ export default class Sticky extends React.Component {
   }
 
   static defaultProps = {
+    useContainerEvents: false,
     isActive: true,
     className: '',
     style: {},
@@ -40,7 +44,6 @@ export default class Sticky extends React.Component {
   }
 
   componentDidMount() {
-    this.on(['resize', 'scroll', 'touchstart', 'touchmove', 'touchend', 'pageshow', 'load'], this.recomputeState);
     this.recomputeState();
   }
 
@@ -49,7 +52,7 @@ export default class Sticky extends React.Component {
   }
 
   componentWillUnmount() {
-    this.off(['resize', 'scroll', 'touchstart', 'touchmove', 'touchend', 'pageshow', 'load'], this.recomputeState);
+    this.off();
     this.channel.unsubscribe(this.updateContext);
   }
 
@@ -87,7 +90,9 @@ export default class Sticky extends React.Component {
   }
 
   updateContext = ({ inherited, node }) => {
+    this.off();
     this.containerNode = node;
+    this.on();
     this.setState({
       containerOffset: inherited,
       distanceFromBottom: this.getDistanceFromBottom()
@@ -115,15 +120,27 @@ export default class Sticky extends React.Component {
     }
   }
 
-  on(events, callback) {
-    events.forEach((evt) => {
-      window.addEventListener(evt, callback);
+  on() {
+    const eventSource = this.props.useContainerEvents ? this.containerNode : window;
+
+    if (!eventSource) {
+      return;
+    }
+
+    EVENTS.forEach((evt) => {
+      eventSource.addEventListener(evt, this.recomputeState);
     });
   }
 
-  off(events, callback) {
-    events.forEach((evt) => {
-      window.removeEventListener(evt, callback);
+  off() {
+    const eventSource = this.props.useContainerEvents ? this.containerNode : window;
+
+    if (!eventSource) {
+      return;
+    }
+
+    EVENTS.forEach((evt) => {
+      eventSource.removeEventListener(evt, this.recomputeState);
     });
   }
 
@@ -187,6 +204,7 @@ export default class Sticky extends React.Component {
     }
 
     const {
+      useContainerEvents,
       topOffset,
       isActive,
       stickyClassName,

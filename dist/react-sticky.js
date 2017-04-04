@@ -168,11 +168,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function Container(props) {
 	    _classCallCheck(this, Container);
 
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Container).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
 	    _this.updateOffset = function (_ref) {
-	      var inherited = _ref.inherited;
-	      var offset = _ref.offset;
+	      var inherited = _ref.inherited,
+	          offset = _ref.offset;
 
 	      _this.channel.update(function (data) {
 	        data.inherited = inherited + offset;
@@ -267,19 +267,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var EVENTS = ['resize', 'scroll', 'touchstart', 'touchmove', 'touchend', 'pageshow', 'load'];
+
 	var Sticky = function (_React$Component) {
 	  _inherits(Sticky, _React$Component);
 
 	  function Sticky(props) {
 	    _classCallCheck(this, Sticky);
 
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sticky).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (Sticky.__proto__ || Object.getPrototypeOf(Sticky)).call(this, props));
 
 	    _this.updateContext = function (_ref) {
-	      var inherited = _ref.inherited;
-	      var node = _ref.node;
+	      var inherited = _ref.inherited,
+	          node = _ref.node;
 
+	      _this.off();
 	      _this.containerNode = node;
+	      _this.on();
 	      _this.setState({
 	        containerOffset: inherited,
 	        distanceFromBottom: _this.getDistanceFromBottom()
@@ -320,7 +324,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
-	      this.on(['resize', 'scroll', 'touchstart', 'touchmove', 'touchend', 'pageshow', 'load'], this.recomputeState);
 	      this.recomputeState();
 	    }
 	  }, {
@@ -331,7 +334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'componentWillUnmount',
 	    value: function componentWillUnmount() {
-	      this.off(['resize', 'scroll', 'touchstart', 'touchmove', 'touchend', 'pageshow', 'load'], this.recomputeState);
+	      this.off();
 	      this.channel.unsubscribe(this.updateContext);
 	    }
 	  }, {
@@ -375,22 +378,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }, {
 	    key: 'on',
-	    value: function on(events, callback) {
-	      events.forEach(function (evt) {
-	        window.addEventListener(evt, callback);
+	    value: function on() {
+	      var _this2 = this;
+
+	      var eventSource = this.props.useContainerEvents ? this.containerNode : window;
+
+	      if (!eventSource) {
+	        return;
+	      }
+
+	      EVENTS.forEach(function (evt) {
+	        eventSource.addEventListener(evt, _this2.recomputeState);
 	      });
 	    }
 	  }, {
 	    key: 'off',
-	    value: function off(events, callback) {
-	      events.forEach(function (evt) {
-	        window.removeEventListener(evt, callback);
+	    value: function off() {
+	      var _this3 = this;
+
+	      var eventSource = this.props.useContainerEvents ? this.containerNode : window;
+
+	      if (!eventSource) {
+	        return;
+	      }
+
+	      EVENTS.forEach(function (evt) {
+	        eventSource.removeEventListener(evt, _this3.recomputeState);
 	      });
 	    }
 	  }, {
 	    key: 'shouldComponentUpdate',
 	    value: function shouldComponentUpdate(newProps, newState) {
-	      var _this2 = this;
+	      var _this4 = this;
 
 	      // Have we changed the number of props?
 	      var propNames = Object.keys(this.props);
@@ -398,7 +417,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      // Have we changed any prop values?
 	      var valuesMatch = propNames.every(function (key) {
-	        return newProps.hasOwnProperty(key) && newProps[key] === _this2.props[key];
+	        return newProps.hasOwnProperty(key) && newProps[key] === _this4.props[key];
 	      });
 	      if (!valuesMatch) return true;
 
@@ -453,15 +472,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        style = _extends({}, style, _stickyStyle, this.props.stickyStyle);
 	      }
 
-	      var _props = this.props;
-	      var topOffset = _props.topOffset;
-	      var isActive = _props.isActive;
-	      var stickyClassName = _props.stickyClassName;
-	      var stickyStyle = _props.stickyStyle;
-	      var bottomOffset = _props.bottomOffset;
-	      var onStickyStateChange = _props.onStickyStateChange;
-
-	      var props = _objectWithoutProperties(_props, ['topOffset', 'isActive', 'stickyClassName', 'stickyStyle', 'bottomOffset', 'onStickyStateChange']);
+	      var _props = this.props,
+	          useContainerEvents = _props.useContainerEvents,
+	          topOffset = _props.topOffset,
+	          isActive = _props.isActive,
+	          stickyClassName = _props.stickyClassName,
+	          stickyStyle = _props.stickyStyle,
+	          bottomOffset = _props.bottomOffset,
+	          onStickyStateChange = _props.onStickyStateChange,
+	          props = _objectWithoutProperties(_props, ['useContainerEvents', 'topOffset', 'isActive', 'stickyClassName', 'stickyStyle', 'bottomOffset', 'onStickyStateChange']);
 
 	      return _react2.default.createElement(
 	        'div',
@@ -480,6 +499,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_react2.default.Component);
 
 	Sticky.propTypes = {
+	  useContainerEvents: _react2.default.PropTypes.bool,
 	  isActive: _react2.default.PropTypes.bool,
 	  className: _react2.default.PropTypes.string,
 	  style: _react2.default.PropTypes.object,
@@ -490,6 +510,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  onStickyStateChange: _react2.default.PropTypes.func
 	};
 	Sticky.defaultProps = {
+	  useContainerEvents: false,
 	  isActive: true,
 	  className: '',
 	  style: {},
